@@ -1,0 +1,268 @@
+openapi: 3.0.1
+info:
+  title: News Service
+  description: AccelByte news service allows developers to integrate 3rd party application
+    to AccelByte news stream, so that it is easier for them to publish contents from
+    their own custom client application.
+  contact:
+    name: Engineering Team at AccelByte
+    url: https://accelbyte.io
+    email: engineering@accelbyte.io
+  version: "2.0"
+servers:
+- url: news.accelbyte.io/v1
+tags:
+- name: News
+paths:
+  /publisher/category/{category}/news:
+    get:
+      tags:
+      - News
+      summary: List news by category
+      description: List of all news by the specified category
+      operationId: getNewsUsingGET
+      parameters:
+      - name: category
+        in: path
+        description: Category of the news going to be retrieved
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Valid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsContents'
+        "404":
+          description: <table> <tr><td>Error Code</td><td>Error Message</td></tr>
+            <tr><td>90011</td><td>news not found</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEntity'
+      x-swagger-router-controller: News
+    post:
+      tags:
+      - News
+      summary: Publish news to a category
+      description: Publish news to the specified category
+      operationId: publishNewsUsingPOST
+      parameters:
+      - name: category
+        in: path
+        description: Category of the news going to be published
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Publish news example
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsCreate'
+        required: true
+      responses:
+        "201":
+          description: News published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsContent'
+        "400":
+          description: <table> <tr><td>Error Code</td><td>Error Message</td></tr>
+            <tr><td>90021</td><td>category is required</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEntity'
+        "404":
+          description: <table> <tr><td>Error Code</td><td>Error Message</td></tr>
+            <tr><td>90022</td><td>category does not exist</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEntity'
+      x-swagger-router-controller: News
+  /publisher/category/{category}/news/{newsId}:
+    put:
+      tags:
+      - News
+      summary: Update news in a category
+      description: Update a specific news in a category by the news id
+      operationId: updateNewsUsingPUT
+      parameters:
+      - name: category
+        in: path
+        description: Category of the news going to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: newsId
+        in: path
+        description: Id of the news going to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        description: Update news example
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsUpdate'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsContent'
+        "404":
+          description: <table> <tr><td>Error Code</td><td>Error Message</td></tr>
+            <tr><td>90031</td><td>news not found</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEntity'
+      x-swagger-router-controller: News
+    delete:
+      tags:
+      - News
+      summary: Delete news in a category
+      description: Delete a specific news in a category
+      operationId: deleteNewsUsingDELETE
+      parameters:
+      - name: category
+        in: path
+        description: Category of the news going to be deleted
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: newsId
+        in: path
+        description: Id of the news going to be updated
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "204":
+          description: News deleted successfully
+          content: {}
+        "404":
+          description: <table> <tr><td>Error Code</td><td>Error Message</td></tr>
+            <tr><td>90041</td><td>news not found</td></tr><table>
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEntity'
+      x-swagger-router-controller: News
+components:
+  schemas:
+    ErrorEntity:
+      required:
+      - errorCode
+      - errorMessage
+      type: object
+      properties:
+        errorCode:
+          type: integer
+          format: int32
+        errorMessage:
+          type: string
+    NewsCreate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        tags:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+    NewsContent:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        newsId:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        tags:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        updatedAt:
+          type: string
+          format: date-time
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        newsId: newsId
+        title: title
+        category: category
+        content: content
+        tags:
+        - tags
+        - tags
+        updatedAt: 2000-01-23T04:56:07.000+00:00
+    NewsContents:
+      type: object
+      properties:
+        news:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsContent'
+      example:
+        news:
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          newsId: newsId
+          title: title
+          category: category
+          content: content
+          tags:
+          - tags
+          - tags
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+        - createdAt: 2000-01-23T04:56:07.000+00:00
+          newsId: newsId
+          title: title
+          category: category
+          content: content
+          tags:
+          - tags
+          - tags
+          updatedAt: 2000-01-23T04:56:07.000+00:00
+    NewsUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        tags:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
